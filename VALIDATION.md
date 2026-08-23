@@ -4,11 +4,12 @@ The package was validated in the Ubuntu sandbox on 2026-08-24.
 
 | Check | Result |
 | --- | --- |
-| FastAPI lifecycle tests | 3 passed |
+| FastAPI and shop lifecycle tests | 4 passed |
 | Python bytecode compilation | Passed |
 | Shell-script syntax check | Passed |
 | HTTP `/healthz` smoke test | Passed |
 | HTTP license creation smoke test | Passed |
+| Browser `/shop` rendering and test checkout | Passed; issued key validated through `/v1/validate` |
 | License hash not exposed in creation response | Passed |
 | EX4/EX5 compilation | Not run; MetaEditor and Wine were not installed in the build environment |
 

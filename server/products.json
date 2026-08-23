@@ -1,0 +1,33 @@
+{
+  "store_name": "EA Rental Shop",
+  "currency": "USD",
+  "products": [
+    {
+      "id": "my-ea-30",
+      "product": "my-ea",
+      "name": "My EA — 30 days",
+      "description": "Rental license bound to one MT4/MT5 account and broker.",
+      "platform": "both",
+      "duration_days": 30,
+      "price_cents": 2900
+    },
+    {
+      "id": "my-ea-90",
+      "product": "my-ea",
+      "name": "My EA — 90 days",
+      "description": "Quarterly rental with the same account-binding rules.",
+      "platform": "both",
+      "duration_days": 90,
+      "price_cents": 6900
+    },
+    {
+      "id": "my-ea-365",
+      "product": "my-ea",
+      "name": "My EA — 365 days",
+      "description": "Annual rental with renewal from the same account later.",
+      "platform": "both",
+      "duration_days": 365,
+      "price_cents": 19900
+    }
+  ]
+}

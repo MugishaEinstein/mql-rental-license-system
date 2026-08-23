@@ -194,3 +194,51 @@ def test_first_machine_binding(tmp_path: Path) -> None:
             },
         )
         assert second_machine.json()["reason"] == "machine_mismatch"
+
+
+def test_shop_test_checkout_issues_real_license(tmp_path: Path) -> None:
+    with build_client(tmp_path) as client:
+        home = client.get("/shop")
+        assert home.status_code == 200
+        assert "EA Rental Shop" in home.text
+        assert "TEST MODE" in home.text
+        assert "/shop/buy/my-ea-30" in home.text
+
+        checkout_page = client.get("/shop/buy/my-ea-30")
+        assert checkout_page.status_code == 200
+        assert "Issue rental license" in checkout_page.text
+
+        issued = client.post(
+            "/shop/checkout",
+            data={
+                "plan_id": "my-ea-30",
+                "email": "shop-customer@example.com",
+                "account_login": "456789",
+                "broker_server": "ShopBroker-Live",
+                "platform": "mt5",
+            },
+        )
+        assert issued.status_code == 200, issued.text
+        assert "License issued" in issued.text
+        assert "MQL-" in issued.text
+
+        listed = client.get("/v1/admin/licenses", headers={"X-Admin-Key": "test-admin-key"})
+        assert listed.status_code == 200
+        records = listed.json()
+        record = next(item for item in records if item["customer_ref"] == "shop-customer@example.com")
+        assert "license_key" not in record
+
+        # Extract the one-time key from the response page for a full integration check.
+        key = issued.text.split("<div class=\"keybox\">")[1].split("</div>")[0]
+        validated = client.post(
+            "/v1/validate",
+            json={
+                "license_key": key,
+                "product": "my-ea",
+                "platform": "mt5",
+                "account_login": "456789",
+                "broker_server": "ShopBroker-Live",
+            },
+        )
+        assert validated.status_code == 200
+        assert validated.json()["valid"] is True

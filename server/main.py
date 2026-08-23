@@ -14,6 +14,8 @@ from typing import Any, Iterator, Optional
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from server.store import router as store_router
+
 
 APP_NAME = "MQL License API"
 DB_PATH = Path(os.getenv("LICENSE_DB_PATH", "./data/licenses.sqlite3"))
@@ -22,6 +24,7 @@ ADMIN_API_KEY = os.getenv("LICENSE_ADMIN_API_KEY", "")
 DEFAULT_GRACE_SECONDS = int(os.getenv("LICENSE_DEFAULT_GRACE_SECONDS", "21600"))
 
 app = FastAPI(title=APP_NAME, version="1.0.0")
+app.include_router(store_router)
 
 
 # ---------- Time and normalization helpers ----------
@@ -428,7 +431,7 @@ def create_license(payload: LicenseCreate) -> dict[str, Any]:
     return row_to_license(row, plaintext_key)
 
 
-@app.get("/v1/admin/licenses", response_model=list[LicenseResponse], dependencies=[Depends(require_admin)])
+@app.get("/v1/admin/licenses", response_model=list[LicenseResponse], response_model_exclude_none=True, dependencies=[Depends(require_admin)])
 def list_licenses(
     customer_ref: Optional[str] = Query(default=None),
     status_filter: Optional[str] = Query(default=None, alias="status"),
@@ -453,7 +456,7 @@ def list_licenses(
     return [row_to_license(row) for row in rows]
 
 
-@app.get("/v1/admin/licenses/{license_id}", response_model=LicenseResponse, dependencies=[Depends(require_admin)])
+@app.get("/v1/admin/licenses/{license_id}", response_model=LicenseResponse, response_model_exclude_none=True, dependencies=[Depends(require_admin)])
 def get_license(license_id: str) -> dict[str, Any]:
     with db_connection() as connection:
         row = connection.execute("SELECT * FROM licenses WHERE id = ?", (license_id,)).fetchone()
@@ -462,7 +465,7 @@ def get_license(license_id: str) -> dict[str, Any]:
     return row_to_license(row)
 
 
-@app.post("/v1/admin/licenses/{license_id}/renew", response_model=LicenseResponse, dependencies=[Depends(require_admin)])
+@app.post("/v1/admin/licenses/{license_id}/renew", response_model=LicenseResponse, response_model_exclude_none=True, dependencies=[Depends(require_admin)])
 def renew_license(license_id: str, payload: LicenseRenew) -> dict[str, Any]:
     now = utc_now()
     with db_connection() as connection:
@@ -480,7 +483,7 @@ def renew_license(license_id: str, payload: LicenseRenew) -> dict[str, Any]:
     return row_to_license(updated)
 
 
-@app.post("/v1/admin/licenses/{license_id}/revoke", response_model=LicenseResponse, dependencies=[Depends(require_admin)])
+@app.post("/v1/admin/licenses/{license_id}/revoke", response_model=LicenseResponse, response_model_exclude_none=True, dependencies=[Depends(require_admin)])
 def revoke_license(license_id: str) -> dict[str, Any]:
     now = utc_now()
     with db_connection() as connection:

@@ -10,7 +10,9 @@ The service uses SQLite for the initial Ubuntu test deployment and also accepts 
 
 | Path | Purpose |
 | --- | --- |
-| `server/main.py` | FastAPI service, SQLite schema, validation logic, and admin endpoints |
+| `server/main.py` | FastAPI service, SQLite/PostgreSQL persistence, validation logic, admin endpoints, and shop integration |
+| `server/store.py` | Browser shop UX and test-mode checkout |
+| `server/products.json` | Shop catalog and rental plan pricing |
 | `mt4/LicenseClient.mqh` | MT4 WebRequest client |
 | `mt4/LicensedEA.mq4` | MT4 sample EA wrapper |
 | `mt5/LicenseClient.mqh` | MT5 WebRequest client |
@@ -76,6 +78,22 @@ Run the test suite with:
 pip install -r requirements-dev.txt
 python3 -m pytest -q
 ```
+
+## Browser shop UX
+
+The local browser shop is available at `/shop` when `LICENSE_STORE_ENABLED=1`. It presents the catalog from `server/products.json`, collects an email, MT account login, broker server, and platform, and issues a real rental license through the same application service used by the administrator API. `LICENSE_STORE_MODE=test` is the only supported checkout mode; it does not collect or charge card details.
+
+Start the API with the shop enabled:
+
+```bash
+export LICENSE_STORE_ENABLED=1
+export LICENSE_STORE_MODE=test
+uvicorn server.main:app --host 127.0.0.1 --port 8000
+```
+
+Open [http://127.0.0.1:8000/shop](http://127.0.0.1:8000/shop), choose a plan, and enter the customer’s exact MT account login and broker server. The issued key is shown once on the completion page. The API stores only the hash, so the customer must save or copy the key immediately.
+
+The shop is intentionally suitable for local testing or a private network only. Anyone who can access `/shop` can issue licenses while test mode is enabled. Keep it on localhost or behind authentication until a real payment provider and an authenticated fulfillment flow are implemented. Live card payments are not wired in this repository.
 
 ## Ubuntu service deployment
 
