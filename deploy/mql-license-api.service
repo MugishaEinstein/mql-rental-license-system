@@ -1,0 +1,22 @@
+[Unit]
+Description=MQL rental licensing API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=licenseapi
+Group=licenseapi
+WorkingDirectory=/opt/mql-license-system
+EnvironmentFile=/etc/mql-license-api/.env
+ExecStart=/opt/mql-license-system/.venv/bin/uvicorn server.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/mql-license-api
+
+[Install]
+WantedBy=multi-user.target

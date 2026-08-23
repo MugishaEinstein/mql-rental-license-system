@@ -1,0 +1,5 @@
+# Replace license.example.com with a DNS name pointing to this Ubuntu server.
+# Caddy obtains and renews a public TLS certificate automatically.
+license.example.com {
+    reverse_proxy 127.0.0.1:8000
+}
